@@ -1,0 +1,336 @@
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Xtentacion178/Fbndbd/main/Dbbd"))()
+local Window = OrionLib:MakeWindow({Name = "Natural Hub beta", HidePremium = false, SaveConfig = true, IntroText = "Natural Hub loading", ConfigFolder = "OrionTest"})
+IntroText = "Natural hub loading"
+
+local Tab = Window:MakeTab({
+    Name = "Home",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+local Section = Tab:AddSection({
+    Name = "Welcome to hub"
+})
+
+local Section = Tab:AddSection({
+    Name = "The Hub is in beta so it's probably having issues "
+})
+
+local Section = Tab:AddSection({
+    Name = "Hub maked by Luccatx and goiaba scripts "
+})
+
+local Tab = Window:MakeTab({
+    Name = "Gamepass",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+local Section = Tab:AddSection({
+    Name = "Below you will find a gamepass option, be careful, it's kicking!"
+})
+
+Tab:AddButton({
+    Name = "Get green balloon",
+    Callback = function()
+        local function createNotif(title, text, icon, duration)
+            game.StarterGui:SetCore("SendNotification", {
+                Title = title,
+                Text = text,
+                Icon = icon,
+                Duration = duration
+            })
+        end
+
+        if game.Workspace:FindFirstChild("GreenBalloon", true) then
+            local balloonClone = game.Workspace:FindFirstChild("GreenBalloon", true):Clone()
+            balloonClone.Parent = game:GetService("Players").LocalPlayer.Backpack
+            createNotif("Natural hub", "ðŸŽˆ Balloon successfully stolen!", nil, 5)
+        else
+            createNotif("Natural hub", "ðŸŽˆ There are no balloons.", nil, 5)
+        end
+        print("fully charged")
+    end    
+})
+
+local Tab = Window:MakeTab({
+    Name = "Humanoids etc",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+local Section = Tab:AddSection({
+    Name = "Shift lock beta"
+})
+
+Tab:AddButton({
+    Name = "Shift lock",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/MiniNoobie/ShiftLockx/main/Shiftlock-MiniNoobie", true))()
+        print("shift executed")
+    end    
+})
+
+local Section = Tab:AddSection({
+    Name = "Wallhack speed"
+})
+
+Tab:AddTextbox({
+    Name = "Velocidade de Caminhada",
+    Description = "Insira a velocidade desejada de caminhada",
+    Default = "16",
+    Callback = function(value)
+        local walkspeed = tonumber(value)
+        if walkspeed then
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = walkspeed
+            print("WalkSpeed ajustado para:", walkspeed)
+        else
+            print("Por favor, insira um valor numérico válido para a velocidade de caminhada.")
+        end
+    end
+})
+
+local Section = Tab:AddSection({
+    Name = "Jump power beta"
+})
+
+Tab:AddTextbox({
+    Name = "Altura do Pulso",
+    Description = "Insira a altura de pulo desejada",
+    Default = "50",
+    Callback = function(value)
+        local jumppower = tonumber(value)
+        if jumppower then
+            game.Players.LocalPlayer.Character.Humanoid.JumpPower = jumppower
+            print("JumpPower ajustado para:", jumppower)
+        else
+            print("Por favor, insira um valor numérico válido para a altura do pulo.")
+        end
+    end
+})Tab:AddSection({
+    Name = "View/Goto"
+})
+
+-- Toggle para a função de visualização
+local viewEnabled = false
+local selectedViewPlayer = nil
+local characterAddedConnection = nil
+
+-- Função para ativar ou desativar a visualização do jogador
+local function toggleView(enabled)
+    if enabled then
+        if selectedViewPlayer then
+            local player = selectedViewPlayer
+            if player then
+                game.Workspace.CurrentCamera.CameraSubject = player.Character
+                if characterAddedConnection then
+                    characterAddedConnection:Disconnect()
+                end
+                characterAddedConnection = player.CharacterAdded:Connect(function(character)
+                    game.Workspace.CurrentCamera.CameraSubject = character
+                end)
+                OrionLib:MakeNotification({
+                    Name = "Visualizando",
+                    Content = "Visualizando o jogador: " .. player.Name,
+                    Image = "rbxassetid://4483345998",
+                    Time = 6
+                })
+            else
+                print("Jogador não encontrado.")
+                viewEnabled = false
+            end
+        else
+            print("Nenhum jogador selecionado para a visualização.")
+            viewEnabled = false
+        end
+    else
+        if characterAddedConnection then
+            characterAddedConnection:Disconnect()
+            characterAddedConnection = nil
+        end
+        game.Workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character
+    end
+end
+
+-- Função para encontrar jogador por nome parcial ou apelido (usando apenas as 2 primeiras letras)
+local function findPlayerByPartialNameOrNickname(partialName)
+    local partial = partialName:sub(1, 2):lower()
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        if player.Name:lower():sub(1, 2) == partial or (player.DisplayName and player.DisplayName:lower():sub(1, 2) == partial) then
+            return player
+        end
+    end
+    return nil
+end
+
+-- Adicionar o textbox para entrada do nome parcial ou apelido do jogador
+Tab:AddTextbox({
+    Name = "Digite o Nome do Jogador para Visualizar",
+    Default = "",
+    TextDisappear = true,
+    Callback = function(value)
+        selectedViewPlayer = findPlayerByPartialNameOrNickname(value)
+        if selectedViewPlayer then
+            print("Jogador encontrado: " .. selectedViewPlayer.Name)
+            if viewEnabled then
+                toggleView(false)
+                toggleView(true)
+            end
+        else
+            print("Nenhum jogador encontrado com esse nome ou apelido.")
+            if viewEnabled then
+                toggleView(false)
+            end
+        end
+    end
+})
+
+-- Adicionar o toggle "View" à seção "Visualização"
+Tab:AddToggle({
+    Name = "View",
+    Default = false,
+    Callback = function(enabled)
+        viewEnabled = enabled
+        toggleView(enabled)
+    end
+})
+
+-- Lista de seleção de jogadores para "Goto"
+local gotoPlayerList = {}
+for _, player in ipairs(game.Players:GetPlayers()) do
+    table.insert(gotoPlayerList, player.Name)
+end
+
+local selectedGotoPlayer = nil
+
+-- Adicionar um ListPlayer para selecionar o jogador alvo para "Goto"
+Tab:AddDropdown({
+    Name = "Selecione o Jogador para Goto",
+    Description = "Selecione o jogador alvo para o Goto",
+    Options = gotoPlayerList,
+    Callback = function(playerName)
+        selectedGotoPlayer = playerName
+    end
+})
+
+-- Adicionar o botão "Goto" à seção "View/Goto"
+Tab:AddButton({
+    Name = "Goto",
+    Description = "Teleporta para o jogador selecionado na lista",
+    Callback = function()
+        if selectedGotoPlayer then
+            local player = game.Players:FindFirstChild(selectedGotoPlayer)
+            if player then
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
+            else
+                print("Jogador não encontrado.")
+            end
+        else
+            print("Nenhum jogador selecionado para o Goto.")
+        end
+    end
+})
+
+-- Conectar eventos de jogador removido
+game.Players.PlayerRemoving:Connect(function(player)
+    if selectedViewPlayer == player then
+        selectedViewPlayer = nil
+        if viewEnabled then
+            toggleView(false)
+            OrionLib:MakeNotification({
+                Name = "Jogador Saiu",
+                Content = player.Name .. " saiu do jogo. Visualização desativada.",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        end
+    end
+end)
+
+-- Função para manter a câmera no jogador selecionado
+local function maintainView()
+    while wait() do
+        if viewEnabled and selectedViewPlayer then
+            local player = selectedViewPlayer
+            if player and game.Workspace.CurrentCamera.CameraSubject ~= player.Character then
+                game.Workspace.CurrentCamera.CameraSubject = player.Character
+            end
+        end
+    end
+end
+
+-- Iniciar a função de manutenção da câmera
+spawn(maintainView)
+
+-- Variável para verificar se o recurso ESP V3 está ativo
+local espV3Enabled = false
+
+-- Dicionário para armazenar os rótulos dos jogadores
+local playerLabels = {}
+
+-- Cor única para os nomes dos jogadores
+local nameColor = Color3.new(1, 0, 0) -- Vermelho
+local outlineColor = Color3.new(0, 0, 0) -- Preto
+
+-- Função para ativar ou desativar o ESP V3
+local function toggleEspV3()
+    espV3Enabled = not espV3Enabled
+    
+    if espV3Enabled then
+        print("ESP V3 ativado!")
+        -- Adiciona rótulos de nome para todos os jogadores
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("Head") then
+                local head = player.Character:FindFirstChild("Head")
+                
+                -- Cria um rótulo de nome sobre a cabeça do jogador
+                local playerNameLabel = Instance.new("BillboardGui")
+                playerNameLabel.Name = "PlayerNameLabel"
+                playerNameLabel.AlwaysOnTop = true
+                playerNameLabel.Size = UDim2.new(0, 100, 0, 20)
+                playerNameLabel.StudsOffset = Vector3.new(0, 2, 0)
+                playerNameLabel.Adornee = head
+                
+                local playerNameText = Instance.new("TextLabel")
+                playerNameText.Name = "PlayerName"
+                playerNameText.Text = player.Name
+                playerNameText.Size = UDim2.new(1, 0, 1, 0)
+                playerNameText.TextColor3 = nameColor
+                playerNameText.BackgroundTransparency = 1
+                playerNameText.Font = Enum.Font.SourceSansSemibold
+                playerNameText.TextSize = 16
+                
+                -- Adiciona uma borda preta ao texto
+                playerNameText.TextStrokeTransparency = 0 -- Borda preta visível
+                playerNameText.TextStrokeColor3 = outlineColor
+                
+                playerNameText.Parent = playerNameLabel
+                
+                -- Adiciona o rótulo ao dicionário playerLabels
+                playerLabels[player.Name] = playerNameLabel
+                
+                -- Define o rótulo como filho da cabeça do jogador
+                playerNameLabel.Parent = head
+            end
+        end
+    else
+        print("ESP V3 desativado!")
+        -- Remove os rótulos sobre as cabeças dos jogadores
+        for _, playerLabel in pairs(playerLabels) do
+            if playerLabel then
+                playerLabel:Destroy()
+            end
+        end
+        -- Limpa o dicionário playerLabels
+        playerLabels = {}
+    end
+end
+
+-- Adiciona o botão "ESP V2" à seção ESP
+Tab:AddButton({
+    Name = "ESP Vermelho",
+    Description = "Ativa e desativa o ESP V3 com nomes vermelhos e bordas pretas",
+    Callback = function()
+        toggleEspV3()
+    end
+})
